@@ -19,9 +19,26 @@ function LoginPage() {
       ? supabase.auth.signInWithPassword({ email, password })
       : supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/admin" } });
     const { error } = await fn;
+    
+    if (error) {
+      setLoading(false);
+      setErr(error.message);
+      return;
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id).eq("role", "admin").maybeSingle();
+      if (data) {
+        nav({ to: "/admin" });
+      } else {
+        nav({ to: "/waitlist" });
+      }
+    } else {
+      // If email confirmation is required, session might be null
+      setErr("Check your email to confirm registration.");
+    }
     setLoading(false);
-    if (error) setErr(error.message);
-    else nav({ to: "/admin" });
   };
 
   return (
