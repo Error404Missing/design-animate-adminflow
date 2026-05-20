@@ -19,6 +19,7 @@ function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
   const [editing, setEditing] = useState<Player | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
@@ -49,8 +50,13 @@ function AdminPage() {
   };
 
   const del = async (id: string) => {
-    if (!confirm("Delete player?")) return;
-    await supabase.from("players").delete().eq("id", id);
+    setDeleting(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    await supabase.from("players").delete().eq("id", deleting);
+    setDeleting(null);
     loadPlayers();
   };
 
@@ -129,6 +135,19 @@ function AdminPage() {
               <button type="button" onClick={() => setEditing(null)} style={{ ...ghostBtn, flex: 1 }}>CANCEL</button>
             </div>
           </form>
+        </div>
+      )}
+
+      {deleting && (
+        <div onClick={(e) => { if (e.target === e.currentTarget) setDeleting(null); }} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.8)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 1000 }}>
+          <div style={{ background: "#0a0a0e", border: "1px solid rgba(255,255,255,.1)", borderRadius: 20, padding: 32, width: "100%", maxWidth: 400, textAlign: "center" }}>
+            <h2 style={{ fontFamily: "Outfit", fontWeight: 900, fontSize: "1.5rem", marginBottom: 16 }}>DELETE PLAYER?</h2>
+            <p style={{ color: "#aaa", fontSize: ".85rem", marginBottom: 24 }}>Are you sure you want to delete this player? This action cannot be undone.</p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={confirmDelete} style={{ ...primaryBtn, flex: 1 }}>YES, DELETE</button>
+              <button onClick={() => setDeleting(null)} style={{ ...ghostBtn, flex: 1, justifyContent: "center" }}>CANCEL</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
