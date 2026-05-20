@@ -74,19 +74,33 @@ function ChatPage() {
     })();
   }, [requestId]);
 
-  // Realtime subscription
+  // Realtime subscription using Broadcast for instant delivery
   useEffect(() => {
-    const channel = supabase
-      .channel(`chat-${requestId}`)
+    const channel = supabase.channel(`chat-${requestId}`);
+    
+    channel
+      .on("broadcast", { event: "new_message" }, (payload) => {
+        const newMsg = payload.payload as Message;
+        // Check if we already have it to avoid duplicates
+        setMessages(prev => {
+          if (prev.some(m => m.id === newMsg.id || m.content === newMsg.content)) return prev;
+          return [...prev, newMsg];
+        });
+      })
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
         table: "messages",
         filter: `request_id=eq.${requestId}`,
       }, (payload) => {
-        setMessages((prev) => [...prev, payload.new as Message]);
+        const newMsg = payload.new as Message;
+        setMessages((prev) => {
+          if (prev.some(m => m.id === newMsg.id || m.content === newMsg.content)) return prev;
+          return [...prev, newMsg];
+        });
       })
       .subscribe();
+
     return () => { supabase.removeChannel(channel); };
   }, [requestId]);
 
@@ -120,8 +134,15 @@ function ChatPage() {
     if (error) {
       setMessages(prev => prev.filter(m => m.id !== tempId)); // remove if failed
     } else if (data) {
+      const confirmedMsg = data as Message;
       // replace temp id with real one
-      setMessages(prev => prev.map(m => m.id === tempId ? (data as Message) : m));
+      setMessages(prev => prev.map(m => m.id === tempId ? confirmedMsg : m));
+      // Broadcast to other users in the channel instantly
+      supabase.channel(`chat-${requestId}`).send({
+        type: "broadcast",
+        event: "new_message",
+        payload: confirmedMsg,
+      });
     }
     
     setSending(false);
