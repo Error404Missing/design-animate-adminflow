@@ -977,3 +977,97 @@ button, a {
   .profile-username { font-size: 2.2rem; }
   .region-filter { display: none; }
 }
+
+/* ── Extra refined animations (v2) ──────────────────────────────── */
+@keyframes float-glow {
+  0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 20px rgba(255,0,0,.15)); }
+  50% { transform: translateY(-4px); filter: drop-shadow(0 0 35px rgba(255,0,0,.35)); }
+}
+@keyframes col-enter {
+  from { opacity: 0; transform: translateY(24px) scale(.97); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes card-pop {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes shine-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: .4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
+.gt-logo-text { animation: float-glow 4s ease-in-out infinite; }
+.gt-tier-col { animation: col-enter .55s cubic-bezier(.2,.9,.25,1.1) both; }
+.gt-tier-col:nth-child(1) { animation-delay: .04s; }
+.gt-tier-col:nth-child(2) { animation-delay: .12s; }
+.gt-tier-col:nth-child(3) { animation-delay: .20s; }
+.gt-tier-col:nth-child(4) { animation-delay: .28s; }
+.gt-tier-col:nth-child(5) { animation-delay: .36s; }
+
+.gt-compact-card { animation: card-pop .35s ease-out both; }
+
+.gt-board-title {
+  background: linear-gradient(90deg, #fff 0%, #ff4848 50%, #fff 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine-sweep 6s linear infinite;
+}
+
+/* Live dot for "Live Rankings" */
+.gt-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .65rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ff8080;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: rgba(255,0,0,.08);
+  border: 1px solid rgba(255,0,0,.2);
+  margin-left: 14px;
+  vertical-align: middle;
+}
+.gt-live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #ff3030;
+  box-shadow: 0 0 10px #ff3030;
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+/* Admin nav link tint */
+.nav-link.admin-link {
+  color: #ff6666;
+  border: 1px solid rgba(255,0,0,.25);
+}
+.nav-link.admin-link:hover {
+  background: rgba(255,0,0,.12);
+  color: #fff;
+}
+
+/* Smooth tab indicator slide */
+.gt-tab { transition: transform .35s cubic-bezier(.2,.9,.3,1.2), background .3s, color .3s, border-color .3s, box-shadow .3s; }
+.gt-tab-active { transform: translateY(-3px); }
+
+/* Card hover lift becomes 3D */
+.gt-compact-card:hover {
+  transform: translateY(-4px) scale(1.02) rotateX(2deg);
+  perspective: 600px;
+}
+
+/* Loading skeleton */
+.gt-skeleton {
+  height: 58px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.07) 50%, rgba(255,255,255,.03) 100%);
+  background-size: 200% 100%;
+  animation: shine-sweep 1.4s linear infinite;
+}
