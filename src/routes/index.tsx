@@ -34,6 +34,21 @@ const MODES = [
   { id: "mace", label: "Mace" }, { id: "ltm", label: "LTMs" },
 ] as const;
 
+const MODE_ICONS: Record<string, string> = {
+  overall: "https://mctiers.com/tier_icons/overall.svg",
+  vanilla: "https://mctiers.com/tier_icons/vanilla.svg",
+  uhc: "https://mctiers.com/tier_icons/uhc.svg",
+  pot: "https://mctiers.com/tier_icons/pot.svg",
+  nethop: "https://mctiers.com/tier_icons/nethop.svg",
+  smp: "https://mctiers.com/tier_icons/smp.svg",
+  sword: "https://mctiers.com/tier_icons/sword.svg",
+  axe: "https://mctiers.com/tier_icons/axe.svg",
+  mace: "https://mctiers.com/tier_icons/mace.svg",
+  ltm: "https://mctiers.com/tier_icons/overall.svg",
+};
+
+const OVERALL_MODE_ORDER = ["vanilla","uhc","pot","nethop","smp","sword","axe","mace"];
+
 const REGIONS = ["ALL", "EU", "NA", "AS", "SA", "OCE"] as const;
 
 const tierNum = (t: string) => parseInt((t || "LT5").substring(2), 10);
@@ -107,8 +122,20 @@ function Index() {
     return cols;
   }, [players, mode, region, search]);
 
+  const overallList = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return players
+      .filter((p) => {
+        if (region !== "ALL" && p.region.toUpperCase() !== region) return false;
+        if (q && !p.name.toLowerCase().includes(q)) return false;
+        return true;
+      })
+      .sort((a, b) => b.points - a.points)
+      .map((p, i) => ({ p, rank: i + 1 }));
+  }, [players, region, search]);
+
   const copyIp = async () => {
-    try { await navigator.clipboard.writeText("mcpvp.club"); } catch {}
+    try { await navigator.clipboard.writeText("metamc.it"); } catch {}
     setToast(true);
     setTimeout(() => setToast(false), 2000);
   };
@@ -153,7 +180,7 @@ function Index() {
                 </button>
               ))}
             </div>
-            <button className="server-ip-btn" onClick={copyIp}>mcpvp.club</button>
+            <button className="server-ip-btn" onClick={copyIp}>metamc.it</button>
           </div>
         </div>
 
@@ -162,6 +189,7 @@ function Index() {
             <div className="gt-tabs">
               {MODES.map((m) => (
                 <button key={m.id} className={`gt-tab ${mode === m.id ? "gt-tab-active" : ""}`} onClick={() => setMode(m.id)}>
+                  <img src={MODE_ICONS[m.id]} alt="" style={{ width: 16, height: 16, marginRight: 6, verticalAlign: "-3px", opacity: .9 }} />
                   <span>{m.label}</span>
                 </button>
               ))}
@@ -172,6 +200,49 @@ function Index() {
               <span className="gt-live-pill"><span className="gt-live-dot" />Live</span>
             </div>
 
+            {mode === "overall" ? (
+              <div className="ov-list">
+                <div className="ov-head">
+                  <span>#  PLAYER</span>
+                  <span></span>
+                  <span>REGION</span>
+                  <span>TIERS</span>
+                </div>
+                {loading ? (
+                  Array.from({ length: 6 }).map((_, i) => <div key={i} className="gt-skeleton" style={{ margin: "8px 24px" }} />)
+                ) : overallList.length === 0 ? (
+                  <div className="gt-empty" style={{ padding: 40, textAlign: "center" }}>No players</div>
+                ) : (
+                  overallList.map(({ p, rank }) => (
+                    <div key={p.id} className={`ov-row ${rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : ""}`} onClick={() => setProfile(p)}>
+                      <div className="ov-rank-cell">
+                        <em>{rank}.</em>
+                        <img src={avatarUrl(p.name)} alt={p.name} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = avatarUrl("steve"); }} />
+                      </div>
+                      <div className="ov-player-info">
+                        <div className="ov-player-name">{p.name}</div>
+                        <div className="ov-player-title"><span className="diamond">◆</span>{p.title} <span style={{ opacity: .65 }}>({p.points} points)</span></div>
+                      </div>
+                      <div className={`ov-region-badge region-${p.region.toUpperCase()}`}>{p.region}</div>
+                      <div className="ov-tiers-row">
+                        {OVERALL_MODE_ORDER.map((m) => {
+                          const t = p.tiers?.[m];
+                          const n = t ? tierNum(t) : 0;
+                          return (
+                            <div key={m} className={`ov-tier-cell ${t ? `t${n}` : ""}`} title={`${m.toUpperCase()}: ${t || "—"}`}>
+                              <div className={`ov-tier-icon ${t ? `has-t${n}` : "empty"}`}>
+                                <img src={MODE_ICONS[m]} alt={m} loading="lazy" />
+                              </div>
+                              <span className="ov-tier-label">{t || "—"}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
             <div className="gt-tier-columns">
               {[1,2,3,4,5].map((n) => (
                 <div key={n} className="gt-tier-col">
@@ -202,6 +273,7 @@ function Index() {
                 </div>
               ))}
             </div>
+            )}
 
             <div className="gt-swipe-hint">
               <div className="swipe-line" />
@@ -217,7 +289,7 @@ function Index() {
             <div className="gt-footer-links">
               <Link to="/admin">Admin</Link>
               <span>·</span>
-              <span>mcpvp.club</span>
+              <span>metamc.it</span>
             </div>
           </div>
         </footer>
