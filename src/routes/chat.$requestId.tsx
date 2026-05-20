@@ -281,7 +281,7 @@ function ChatPage() {
           <input
             value={text}
             onChange={e => setText(e.target.value)}
-            placeholder={isClosed ? "This session is closed." : "Type a message..."}
+            placeholder={isClosed ? "This test is completed and results are being uploaded." : "Type a message..."}
             disabled={isClosed}
             style={{
               flex: 1,

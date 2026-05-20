@@ -42,6 +42,7 @@ function WaitlistPage() {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [completingId, setCompletingId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -92,6 +93,17 @@ function WaitlistPage() {
     if (!userId) return;
     await supabase.from("test_requests").update({ status }).eq("id", id);
     await loadRequests(userId, isAdmin);
+  };
+
+  const confirmComplete = async (action: 'now' | 'later') => {
+    if (!completingId || !userId) return;
+    await supabase.from("test_requests").update({ status: "completed" }).eq("id", completingId);
+    setCompletingId(null);
+    if (action === 'now') {
+      nav({ to: "/admin" });
+    } else {
+      await loadRequests(userId, isAdmin);
+    }
   };
 
   const myRequests = requests.filter(r => r.user_id === userId);
@@ -194,7 +206,7 @@ function WaitlistPage() {
                         </div>
                         <div style={{ display: "flex", gap: 8 }}>
                           <Link to="/chat/$requestId" params={{ requestId: r.id }} style={primaryBtn}>💬 Chat</Link>
-                          <button onClick={() => updateStatus(r.id, "completed")} style={greenBtn}>✓ Complete</button>
+                          <button onClick={() => setCompletingId(r.id)} style={greenBtn}>✓ Complete</button>
                           <button onClick={() => updateStatus(r.id, "rejected")} style={redBtn}>✕ Reject</button>
                         </div>
                       </div>
@@ -293,6 +305,24 @@ function WaitlistPage() {
               <button type="button" onClick={() => setShowForm(false)} style={{ ...ghostBtnSm, flex: 1, padding: "14px" }}>CANCEL</button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Complete Confirmation Modal */}
+      {completingId && (
+        <div onClick={(e) => { if (e.target === e.currentTarget) setCompletingId(null); }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 300 }}>
+          <div style={{ background: "#0a0a0e", border: "1px solid rgba(255,255,255,.1)", borderRadius: 24, padding: 36, width: "100%", maxWidth: 420, textAlign: "center" }}>
+            <h2 style={{ fontFamily: "Outfit", fontWeight: 900, fontSize: "1.6rem", marginBottom: 16 }}>FINISH <span style={{ color: "#22c55e" }}>TESTING?</span></h2>
+            <p style={{ color: "#aaa", fontSize: ".9rem", marginBottom: 24, lineHeight: 1.5 }}>
+              Are you sure you want to mark this test as completed? The chat will be closed and the player will be notified.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button onClick={() => confirmComplete('now')} style={{ ...greenBtn, padding: "14px", justifyContent: "center", width: "100%" }}>✓ COMPLETE & GO TO ADMIN PANEL</button>
+              <button onClick={() => confirmComplete('later')} style={{ ...ghostBtnSm, padding: "14px", justifyContent: "center", width: "100%" }}>COMPLETE & DO IT LATER</button>
+              <button onClick={() => setCompletingId(null)} style={{ ...ghostBtnSm, padding: "14px", justifyContent: "center", width: "100%", marginTop: 8, borderColor: "transparent" }}>CANCEL</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
