@@ -99,12 +99,31 @@ function ChatPage() {
     e.preventDefault();
     if (!text.trim() || !userId || !request) return;
     setSending(true);
-    await supabase.from("messages").insert({
+    // Optimistic update
+    const tempId = crypto.randomUUID();
+    const newMsg: Message = {
+      id: tempId,
       request_id: requestId,
       sender_id: userId,
       content: text.trim(),
-    });
+      created_at: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, newMsg]);
     setText("");
+
+    const { error, data } = await supabase.from("messages").insert({
+      request_id: requestId,
+      sender_id: userId,
+      content: newMsg.content,
+    }).select().single();
+    
+    if (error) {
+      setMessages(prev => prev.filter(m => m.id !== tempId)); // remove if failed
+    } else if (data) {
+      // replace temp id with real one
+      setMessages(prev => prev.map(m => m.id === tempId ? (data as Message) : m));
+    }
+    
     setSending(false);
   };
 
