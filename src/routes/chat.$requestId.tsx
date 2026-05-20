@@ -201,26 +201,31 @@ function ChatPage() {
                 gap: 8,
                 marginTop: prevSame ? 2 : 10,
               }}>
-                {/* Avatar placeholder */}
+                {/* Sender Label & Avatar */}
                 {!prevSame && (
-                  <div style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "50%",
-                    background: isMe ? "#ff000022" : "rgba(255,255,255,.08)",
-                    border: `1px solid ${isMe ? "#ff000044" : "rgba(255,255,255,.1)"}`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: ".65rem",
-                    color: isMe ? "#ff8080" : "#888",
-                    fontWeight: 800,
-                    flexShrink: 0,
-                  }}>
-                    {isMe ? "ME" : "T"}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start", flexShrink: 0, width: 45 }}>
+                    <div style={{ fontSize: ".55rem", color: "#666", fontWeight: 800, marginBottom: 4, textAlign: "center", width: "100%" }}>
+                      {m.sender_id === request.tester_id ? "TESTER" : "PLAYER"}
+                    </div>
+                    <div style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: isMe ? "#ff000022" : "rgba(255,255,255,.08)",
+                      border: `1px solid ${isMe ? "#ff000044" : "rgba(255,255,255,.1)"}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: ".65rem",
+                      color: isMe ? "#ff8080" : "#888",
+                      fontWeight: 800,
+                      margin: "0 auto"
+                    }}>
+                      {isMe ? "ME" : m.sender_id === request.tester_id ? "T" : "P"}
+                    </div>
                   </div>
                 )}
-                {prevSame && <div style={{ width: 28, flexShrink: 0 }} />}
+                {prevSame && <div style={{ width: 45, flexShrink: 0 }} />}
 
                 <div style={{
                   maxWidth: "72%",
