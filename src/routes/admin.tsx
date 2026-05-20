@@ -109,17 +109,17 @@ function AdminPage() {
             <h2 style={{ fontFamily: "Outfit", fontWeight: 900, fontSize: "1.5rem", marginBottom: 20 }}>{editing.id ? "EDIT" : "NEW"} PLAYER</h2>
             <label style={lbl}>Name<input required value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} style={inp} /></label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <label style={lbl}>Region<select value={editing.region} onChange={(e) => setEditing({ ...editing, region: e.target.value })} style={inp}>{REGIONS.map(r => <option key={r}>{r}</option>)}</select></label>
+              <label style={lbl}>Region<select value={editing.region} onChange={(e) => setEditing({ ...editing, region: e.target.value })} style={inp}>{REGIONS.map(r => <option key={r} style={{ background: "#0a0a0e", color: "#fff" }}>{r}</option>)}</select></label>
               <label style={lbl}>Points<input type="number" value={editing.points} onChange={(e) => setEditing({ ...editing, points: Number(e.target.value) })} style={inp} /></label>
             </div>
-            <label style={lbl}>Title<select value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} style={inp}>{TITLES.map(t => <option key={t}>{t}</option>)}</select></label>
+            <label style={lbl}>Title<select value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} style={inp}>{TITLES.map(t => <option key={t} style={{ background: "#0a0a0e", color: "#fff" }}>{t}</option>)}</select></label>
             <div style={{ fontSize: ".7rem", color: "#888", letterSpacing: 2, margin: "12px 0 8px" }}>TIERS PER MODE</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {MODES.map(m => (
                 <label key={m} style={{ ...lbl, marginBottom: 0 }}>
                   <span style={{ fontSize: ".7rem", color: "#aaa", textTransform: "uppercase" }}>{m}</span>
                   <select value={editing.tiers[m] ?? ""} onChange={(e) => setEditing({ ...editing, tiers: { ...editing.tiers, [m]: e.target.value } })} style={inp}>
-                    {TIERS.map(t => <option key={t} value={t}>{t || "—"}</option>)}
+                    {TIERS.map(t => <option key={t} value={t} style={{ background: "#0a0a0e", color: "#fff" }}>{t || "—"}</option>)}
                   </select>
                 </label>
               ))}
