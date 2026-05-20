@@ -15,7 +15,29 @@ type Request = {
   created_at: string;
 };
 
-const MODES = ["overall","vanilla","uhc","pot","nethop","smp","sword","axe","mace","ltm"];
+const WAITLIST_MODES = [
+  { id: "vanilla", label: "Vanilla" },
+  { id: "uhc", label: "UHC" },
+  { id: "pot", label: "Pot" },
+  { id: "nethop", label: "NethOP" },
+  { id: "smp", label: "SMP" },
+  { id: "sword", label: "Sword" },
+  { id: "axe", label: "Axe" },
+  { id: "mace", label: "Mace" },
+  { id: "ltm", label: "LTMs" },
+];
+
+const MODE_ICONS: Record<string, string> = {
+  vanilla: "https://mctiers.com/tier_icons/vanilla.svg",
+  uhc: "https://mctiers.com/tier_icons/uhc.svg",
+  pot: "https://mctiers.com/tier_icons/pot.svg",
+  nethop: "https://mctiers.com/tier_icons/nethop.svg",
+  smp: "https://mctiers.com/tier_icons/smp.svg",
+  sword: "https://mctiers.com/tier_icons/sword.svg",
+  axe: "https://mctiers.com/tier_icons/axe.svg",
+  mace: "https://mctiers.com/tier_icons/mace.svg",
+  ltm: "https://mctiers.com/tier_icons/overall.svg",
+};
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pending",
   in_progress: "In Progress",
@@ -37,7 +59,7 @@ function WaitlistPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [ign, setIgn] = useState("");
-  const [mode, setMode] = useState("overall");
+  const [mode, setMode] = useState("vanilla");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState("");
@@ -79,7 +101,7 @@ function WaitlistPage() {
     setSubmitting(false);
     if (error) { setMsg(error.message); return; }
     setShowForm(false);
-    setIgn(""); setMode("overall"); setNote("");
+    setIgn(""); setMode("vanilla"); setNote("");
     await loadRequests(userId, isAdmin);
   };
 
@@ -291,9 +313,29 @@ function WaitlistPage() {
             </label>
             <label style={lbl}>
               Mode *
-              <select value={mode} onChange={e => setMode(e.target.value)} style={inp}>
-                {MODES.map(m => <option key={m} value={m} style={{ background: "#0a0a0e" }}>{m.toUpperCase()}</option>)}
-              </select>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                {WAITLIST_MODES.map(m => (
+                  <div
+                    key={m.id}
+                    onClick={() => setMode(m.id)}
+                    style={{
+                      background: mode === m.id ? "rgba(255,0,0,.15)" : "rgba(255,255,255,.04)",
+                      border: `1px solid ${mode === m.id ? "#ff0000" : "rgba(255,255,255,.08)"}`,
+                      padding: "8px 14px",
+                      borderRadius: 10,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      cursor: "pointer",
+                      transition: "all .2s",
+                      color: mode === m.id ? "#fff" : "#aaa",
+                    }}
+                  >
+                    <img src={MODE_ICONS[m.id]} alt="" style={{ width: 16, height: 16, opacity: mode === m.id ? 1 : 0.6 }} />
+                    <span style={{ fontSize: ".85rem", fontWeight: mode === m.id ? 800 : 500, fontFamily: "Outfit" }}>{m.label}</span>
+                  </div>
+                ))}
+              </div>
             </label>
             <label style={lbl}>
               Note (optional)
