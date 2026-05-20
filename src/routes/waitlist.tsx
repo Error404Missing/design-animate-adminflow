@@ -96,8 +96,36 @@ function WaitlistPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) return;
+    if (!userId || !ign.trim()) return;
     setSubmitting(true);
+    setMsg("");
+
+    // Check if IGN is already linked (case insensitive)
+    const { data: linkData, error: linkErr } = await supabase
+      .from("linked_accounts")
+      .select("*")
+      .ilike("ign", ign.trim())
+      .maybeSingle();
+
+    if (linkData) {
+      if (linkData.user_id !== userId) {
+        setMsg("This Minecraft name is already linked to another Discord account. If this is yours, contact an admin.");
+        setSubmitting(false);
+        return;
+      }
+    } else {
+      // Try to link it
+      const { error: insertLinkErr } = await supabase.from("linked_accounts").insert({
+        user_id: userId,
+        ign: ign.trim()
+      });
+      if (insertLinkErr) {
+        setMsg("Failed to link this Minecraft name. It might be taken.");
+        setSubmitting(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.from("test_requests").insert({
       user_id: userId,
       ign,
