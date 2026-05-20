@@ -189,6 +189,7 @@ function Index() {
             <div className="gt-tabs">
               {MODES.map((m) => (
                 <button key={m.id} className={`gt-tab ${mode === m.id ? "gt-tab-active" : ""}`} onClick={() => setMode(m.id)}>
+                  <img src={MODE_ICONS[m.id]} alt="" style={{ width: 16, height: 16, marginRight: 6, verticalAlign: "-3px", opacity: .9 }} />
                   <span>{m.label}</span>
                 </button>
               ))}
