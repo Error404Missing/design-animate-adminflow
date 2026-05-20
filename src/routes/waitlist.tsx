@@ -201,8 +201,7 @@ function WaitlistPage() {
         {msg && <div style={{ background: "rgba(255,0,0,.1)", color: "#ff8080", padding: 12, borderRadius: 12, marginBottom: 16 }}>{msg}</div>}
 
         {/* ─── USER SECTION ─── */}
-        {!isAdmin && (
-          <section>
+        <section>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <h2 style={{ fontFamily: "Outfit", fontWeight: 800, fontSize: "1.1rem", color: "#aaa", letterSpacing: 2 }}>YOUR REQUESTS</h2>
               <button onClick={() => setShowForm(true)} style={primaryBtn}>+ REQUEST TEST</button>
@@ -243,11 +242,10 @@ function WaitlistPage() {
               </div>
             )}
           </section>
-        )}
 
         {/* ─── ADMIN SECTION ─── */}
         {isAdmin && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 40, marginTop: 40 }}>
 
             {/* My active tests */}
             {myActiveAsAdmin.length > 0 && (
