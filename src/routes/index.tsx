@@ -153,6 +153,9 @@ function Index() {
             <a href="#tiers" className="nav-link">
               <span>Rankings</span>
             </a>
+            <Link to="/waitlist" className="nav-link">
+              <span>Waitlist</span>
+            </Link>
             <Link to="/admin" className="nav-link admin-link">
               <span>Admin</span>
             </Link>
@@ -287,6 +290,8 @@ function Index() {
             <div className="gt-footer-brand">TIER<span>HUB</span></div>
             <div className="gt-footer-copy">© 2026 TierHub — Competitive PvP Rankings</div>
             <div className="gt-footer-links">
+              <Link to="/waitlist">Waitlist</Link>
+              <span>·</span>
               <Link to="/admin">Admin</Link>
               <span>·</span>
               <span>metamc.it</span>
