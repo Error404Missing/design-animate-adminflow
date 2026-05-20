@@ -1,63 +1,44 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({ component: LoginPage });
 
 function LoginPage() {
   const nav = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErr(""); setLoading(true);
-    const fn = mode === "signin"
-      ? supabase.auth.signInWithPassword({ email, password })
-      : supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/admin" } });
-    const { error } = await fn;
-    
-    if (error) {
-      setLoading(false);
-      setErr(error.message);
-      return;
-    }
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) nav({ to: "/waitlist" });
+    });
+  }, [nav]);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id).eq("role", "admin").maybeSingle();
-      if (data) {
-        nav({ to: "/admin" });
-      } else {
-        nav({ to: "/waitlist" });
-      }
-    } else {
-      // If email confirmation is required, session might be null
-      setErr("Check your email to confirm registration.");
-    }
-    setLoading(false);
+  const loginWithDiscord = async () => {
+    setLoading(true);
+    await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: { redirectTo: window.location.origin + "/waitlist" },
+    });
   };
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <form onSubmit={submit} style={{ width: "100%", maxWidth: 420, background: "rgba(10,10,14,.6)", backdropFilter: "blur(30px)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 24, padding: 40, boxShadow: "0 40px 80px rgba(0,0,0,.6)" }}>
-        <h1 style={{ fontFamily: "Outfit", fontWeight: 900, fontSize: "2rem", marginBottom: 6 }}>TIER<span style={{ color: "#ff0000" }}>HUB</span></h1>
-        <p style={{ color: "#808080", marginBottom: 28, fontSize: ".85rem" }}>{mode === "signin" ? "Sign in to access admin panel" : "Create the first admin account"}</p>
-        <input type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
-        <input type="password" required minLength={6} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} />
-        {err && <div style={{ color: "#ff5050", fontSize: ".8rem", marginBottom: 12 }}>{err}</div>}
-        <button type="submit" disabled={loading} style={btnStyle}>{loading ? "..." : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}</button>
-        <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} style={{ background: "none", color: "#808080", fontSize: ".8rem", marginTop: 16, width: "100%" }}>
-          {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
+      <div style={{ width: "100%", maxWidth: 420, background: "rgba(10,10,14,.6)", backdropFilter: "blur(30px)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 24, padding: 40, boxShadow: "0 40px 80px rgba(0,0,0,.6)", textAlign: "center" }}>
+        <h1 style={{ fontFamily: "Outfit", fontWeight: 900, fontSize: "2.5rem", marginBottom: 6 }}>TIER<span style={{ color: "#ff0000" }}>HUB</span></h1>
+        <p style={{ color: "#808080", marginBottom: 36, fontSize: ".9rem" }}>Connect your Discord account to continue</p>
+        
+        <button onClick={loginWithDiscord} disabled={loading} style={discordBtn}>
+          <svg viewBox="0 0 127.14 96.36" width="24" height="24" style={{ marginRight: 12 }}>
+            <path fill="#fff" d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91,65.69,84.69,65.69Z"/>
+          </svg>
+          {loading ? "CONNECTING..." : "LOGIN WITH DISCORD"}
         </button>
-        <Link to="/" style={{ display: "block", textAlign: "center", color: "#555", fontSize: ".75rem", marginTop: 20 }}>← Back to rankings</Link>
-      </form>
+
+        <Link to="/" style={{ display: "block", color: "#555", fontSize: ".8rem", marginTop: 24, textDecoration: "none" }}>← Back to rankings</Link>
+      </div>
     </div>
   );
 }
 
-const inputStyle: React.CSSProperties = { width: "100%", padding: "14px 16px", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12, color: "#fff", fontSize: ".9rem", marginBottom: 12, outline: "none", fontFamily: "inherit" };
-const btnStyle: React.CSSProperties = { width: "100%", padding: "14px", background: "#ff0000", color: "#fff", border: "none", borderRadius: 12, fontWeight: 900, fontSize: ".85rem", letterSpacing: 2, cursor: "pointer", fontFamily: "Outfit" };
+const discordBtn: React.CSSProperties = { width: "100%", padding: "16px", background: "#5865F2", color: "#fff", border: "none", borderRadius: 12, fontWeight: 800, fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontFamily: "Outfit", transition: "background .2s" };

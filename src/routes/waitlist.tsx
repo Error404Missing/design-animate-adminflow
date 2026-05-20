@@ -12,6 +12,7 @@ type Request = {
   mode: string;
   note: string;
   status: string;
+  discord_username: string;
   created_at: string;
 };
 
@@ -64,6 +65,7 @@ function WaitlistPage() {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [discordUsername, setDiscordUsername] = useState("");
   const [completingId, setCompletingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,7 +73,11 @@ function WaitlistPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { nav({ to: "/login" }); return; }
       setUserId(session.user.id);
-      setUserEmail(session.user.email ?? "");
+      
+      const discord = session.user.user_metadata?.custom_claims?.global_name || session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Unknown Discord";
+      setDiscordUsername(discord);
+      setUserEmail(discord); // Display discord name instead of email in header
+
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id).eq("role", "admin").maybeSingle();
       if (data) setIsAdmin(true);
       await loadRequests(session.user.id, !!data);
@@ -97,6 +103,7 @@ function WaitlistPage() {
       ign,
       mode,
       note,
+      discord_username: discordUsername,
     });
     setSubmitting(false);
     if (error) { setMsg(error.message); return; }
@@ -253,7 +260,14 @@ function WaitlistPage() {
                         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                           <span style={{ fontFamily: "Outfit", fontWeight: 900, fontSize: "1.4rem", color: "#ff0000", minWidth: 30 }}>#{i + 1}</span>
                           <div>
-                            <div style={{ fontFamily: "Outfit", fontWeight: 800, fontSize: "1.05rem" }}>{r.ign}</div>
+                            <div style={{ fontFamily: "Outfit", fontWeight: 800, fontSize: "1.05rem" }}>
+                              {r.ign}
+                              {r.discord_username && (
+                                <span style={{ background: "#5865F222", color: "#5865F2", fontSize: ".7rem", padding: "2px 6px", borderRadius: 6, marginLeft: 8, verticalAlign: "middle" }}>
+                                  Discord: {r.discord_username}
+                                </span>
+                              )}
+                            </div>
                             <div style={{ color: "#666", fontSize: ".8rem", marginTop: 3 }}>
                               Mode: <span style={{ color: "#aaa" }}>{r.mode.toUpperCase()}</span>
                               {r.note && <> · {r.note}</>}
