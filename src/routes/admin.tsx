@@ -70,7 +70,7 @@ function AdminPage() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editing) return;
-    const payload = { name: editing.name, region: editing.region, title: editing.title, points: Number(editing.points), tiers: editing.tiers };
+    const payload = { name: editing.name, region: editing.region, title: editing.title, points: Number(editing.points), tiers: editing.tiers || {} };
     const { error } = editing.id
       ? await supabase.from("players").update(payload).eq("id", editing.id)
       : await supabase.from("players").insert(payload);
@@ -154,9 +154,9 @@ function AdminPage() {
                 <label key={m} style={{ ...lbl, marginBottom: 0 }}>
                   <span style={{ fontSize: ".7rem", color: "#aaa", textTransform: "uppercase" }}>{m}</span>
                   <select 
-                    value={editing.tiers[m] ?? ""} 
+                    value={(editing.tiers || {})[m] ?? ""} 
                     onChange={(e) => {
-                      const newTiers = { ...editing.tiers, [m]: e.target.value };
+                      const newTiers = { ...(editing.tiers || {}), [m]: e.target.value };
                       if (m !== "overall") {
                         const { points, title } = calcStats(newTiers);
                         setEditing({ ...editing, tiers: newTiers, points, title });
