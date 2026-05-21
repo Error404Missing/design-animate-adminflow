@@ -171,9 +171,12 @@ function WaitlistPage() {
 
   const confirmComplete = async (action: 'now' | 'later') => {
     if (!completingId || !userId) return;
+    const req = requests.find(r => r.id === completingId);
     await supabase.from("test_requests").update({ status: "completed" }).eq("id", completingId);
     setCompletingId(null);
-    if (action === 'now') {
+    if (action === 'now' && req) {
+      nav({ to: `/admin?add_player=${encodeURIComponent(req.ign)}` });
+    } else if (action === 'now') {
       nav({ to: "/admin" });
     } else {
       await loadRequests(userId, isAdmin);

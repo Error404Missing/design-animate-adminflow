@@ -52,6 +52,13 @@ function AdminPage() {
       if (!data) { setMsg("You are not an admin."); setChecking(false); return; }
       setIsAdmin(true); setChecking(false);
       loadPlayers();
+
+      const params = new URLSearchParams(window.location.search);
+      const addPlayer = params.get("add_player");
+      if (addPlayer) {
+        setEditing({ ...empty(), name: addPlayer });
+        nav({ to: "/admin", replace: true });
+      }
     })();
   }, []);
 
