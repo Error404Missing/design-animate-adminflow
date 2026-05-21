@@ -11,6 +11,28 @@ const REGIONS = ["EU","NA","AS","SA","OCE"];
 const TITLES = ["Combat Grandmaster","Combat Master","Combat Ace","Combat Specialist","Combat Cadet","Combat Novice","Rookie"];
 const TIERS = ["","HT1","LT1","HT2","LT2","HT3","LT3","HT4","LT4","HT5","LT5"];
 
+const TIER_POINTS: Record<string, number> = {
+  HT1: 50, LT1: 45, HT2: 35, LT2: 30, HT3: 20, LT3: 15,
+  HT4: 10, LT4: 5, HT5: 2, LT5: 1,
+};
+
+function calcStats(tiers: Record<string, string>) {
+  let pts = 0;
+  for (const m of MODES) {
+    if (m === "overall") continue;
+    if (tiers[m]) pts += TIER_POINTS[tiers[m]] || 0;
+  }
+  let title = "Rookie";
+  if (pts >= 400) title = "Combat Grandmaster";
+  else if (pts >= 250) title = "Combat Master";
+  else if (pts >= 100) title = "Combat Ace";
+  else if (pts >= 50) title = "Combat Specialist";
+  else if (pts >= 20) title = "Combat Cadet";
+  else if (pts >= 10) title = "Combat Novice";
+  
+  return { points: pts, title };
+}
+
 const empty = (): Player => ({ id: "", name: "", region: "EU", title: "Rookie", points: 0, tiers: {} });
 
 function AdminPage() {
@@ -124,7 +146,19 @@ function AdminPage() {
               {MODES.map(m => (
                 <label key={m} style={{ ...lbl, marginBottom: 0 }}>
                   <span style={{ fontSize: ".7rem", color: "#aaa", textTransform: "uppercase" }}>{m}</span>
-                  <select value={editing.tiers[m] ?? ""} onChange={(e) => setEditing({ ...editing, tiers: { ...editing.tiers, [m]: e.target.value } })} style={inp}>
+                  <select 
+                    value={editing.tiers[m] ?? ""} 
+                    onChange={(e) => {
+                      const newTiers = { ...editing.tiers, [m]: e.target.value };
+                      if (m !== "overall") {
+                        const { points, title } = calcStats(newTiers);
+                        setEditing({ ...editing, tiers: newTiers, points, title });
+                      } else {
+                        setEditing({ ...editing, tiers: newTiers });
+                      }
+                    }} 
+                    style={inp}
+                  >
                     {TIERS.map(t => <option key={t} value={t} style={{ background: "#0a0a0e", color: "#fff" }}>{t || "—"}</option>)}
                   </select>
                 </label>

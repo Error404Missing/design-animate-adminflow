@@ -69,6 +69,9 @@ function WaitlistPage() {
   const [completingId, setCompletingId] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+    let ch: any;
+
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { nav({ to: "/login" }); return; }
@@ -79,13 +82,27 @@ function WaitlistPage() {
       setUserEmail(discord); // Display discord name instead of email in header
 
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id).eq("role", "admin").maybeSingle();
-      if (data) setIsAdmin(true);
-      await loadRequests(session.user.id, !!data);
+      if (!active) return;
+      
+      const isAdm = !!data;
+      if (isAdm) setIsAdmin(true);
+      await loadRequests(session.user.id, isAdm);
+
+      ch = supabase
+        .channel("waitlist-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "test_requests" }, () => {
+          loadRequests(session.user.id, isAdm);
+        })
+        .subscribe();
     })();
+
+    return () => {
+      active = false;
+      if (ch) supabase.removeChannel(ch);
+    };
   }, []);
 
   const loadRequests = async (uid: string, admin: boolean) => {
-    setLoading(true);
     const { data } = await supabase
       .from("test_requests")
       .select("*")
